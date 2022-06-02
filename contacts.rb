@@ -28,5 +28,5 @@ end
 
 # Displays contacts from database
 get '/contacts' do
-  @contact_list = @storage.
+  @contact_list = @storage.contacts
 end
