@@ -1,0 +1,15 @@
+<h2>New User</h2>
+
+<form method="post" action="/users/new">
+  <label for="username">Username: </label>
+  <input type="text" id="username" name="username"
+         value="<%= params[:username] || '' %>" required />
+
+  <label for="password">Password: </label>
+  <input type="password" id="password" name="password" required />
+
+  <label for="confirm">Confirm Password: </label>
+  <input type="password" id="confirm" name="confirm" required />
+
+  <button class="block" type="submit">Submit</button>
+</form>

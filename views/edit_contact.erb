@@ -1,0 +1,58 @@
+<h3>Edit Contact Information</h3>
+
+<form method="post" action="/contacts/<%= @contact_id %>">
+  <fieldset>
+    <% if session[:name_error] %>
+      <label for="name" class="bad-input">
+        Name: <%= session.delete(:name_error) %>
+      </label>
+    <% else %>
+      <label for="name">Name:</label>
+    <% end %>
+
+    <input type="text" id="name" name="name"
+           value="<%= @contact[:name] %>" />
+  </fieldset>
+
+  <fieldset>
+    <% if session[:phone_error] %>
+      <label for="phone" class="bad-input">
+        Phone Number: <%= session.delete(:phone_error) %>
+      </label>
+    <% else %>
+      <label for="phone">Phone Number:</label>
+    <% end %>
+
+    <input type="tel" id="phone" name="phone"
+           value="<%= @contact[:phone] %>" />
+  </fieldset>
+
+  <fieldset>
+    <% if session[:email_error] %>
+      <label for="email" class="bad-input">
+        Email Address: <%= session.delete(:email_error) %>
+      </label>
+    <% else %>
+      <label for="email">Email Address:</label>
+    <% end %>
+
+    <input type="email" id="email" name="email"
+           value="<%= @contact[:email] %>" />
+  </fieldset>
+
+  <fieldset>
+    <label for="category">Category:</label>
+    <input type="text" id="category" name="category"
+           value="<%= @contact[:category] %>" />
+  </fieldset>
+
+  <fieldset>
+    <button type="submit">Submit Changes</button>
+  </fieldset>
+</form>
+
+<form method="get" action="/contacts">
+  <fieldset>
+    <button type="submit">Return to Contact List</button>
+  </fieldset>
+</form>

@@ -1,2 +1,5 @@
 # Ignore test files
 test.*
+
+# Ignore planning files
+plan.*

@@ -7,7 +7,12 @@ gem 'sinatra-contrib'
 gem 'erubis'
 gem 'thin'
 gem 'pg'
-gem 'securerandom'
+gem 'sysrandom'
+gem 'bcrypt'
+
+gem 'rack-test'
+gem 'minitest'
+gem 'minitest-reporters'
 
 group :development do
   gem 'pry'

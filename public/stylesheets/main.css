@@ -1,0 +1,50 @@
+form {
+  width: 40%;
+  padding-bottom: 1%;
+}
+
+input {
+  /* width: 100%; */
+}
+
+label {
+  display: block;
+}
+
+fieldset {
+  padding-bottom: 1%;
+  border: 0 transparent;
+}
+
+.flash-success {
+  font-size: 1.5em;
+  font-weight: bold;
+  display: block;
+  padding-left: 1%;
+  padding-top: 1%;
+  padding-bottom: 1%;
+  background-color: rgb(181, 252, 74);
+}
+
+.flash-failure {
+  font-size: 1.5em;
+  font-weight: bold;
+  display: block;
+  padding-left: 1%;
+  padding-top: 1%;
+  padding-bottom: 1%;
+  background-color: rgb(254, 80, 80);
+}
+
+.bad-input {
+  color: rgb(254, 80, 80);
+}
+
+table {
+  padding-bottom: 2%;
+}
+
+.block {
+  display: block;
+  margin-top: 2%;
+}
