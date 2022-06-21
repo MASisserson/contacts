@@ -6,7 +6,7 @@ require 'bcrypt'
 require 'yaml'
 
 require_relative 'database_persistence'
-require_relative 'user_obj.rb'
+require_relative 'user_obj'
 
 configure do
   enable :sessions
@@ -101,8 +101,7 @@ end
 # Validate login credentials
 def valid_credentials?(saved_usr, username, saved_pwd, password)
   if saved_usr.username == username
-    bcrypt_password = BCrypt::Password.new(saved_pwd)
-    bcrypt_password = password
+    password == BCrypt::Password.new(saved_pwd)
   else
     false
   end
@@ -119,12 +118,14 @@ def valid_username?(username)
 
   users.each { |obj| return false if obj.username == username }
 
+  return false if username.length > 50
+
   true
 end
 
 # Checks that the submitted password is valid
-def valid_password?(password, password_confirm)
-  password = password_confirm
+def valid_password?(_password, password_confirm)
+  password == password_confirm
 end
 
 # Creates a new user object with the given username and password
@@ -152,7 +153,7 @@ post '/users/new' do
   elsif !valid_password?(password, pwd_confirm)
     session[:failure] = 'Passwords do not match.'
     erb :new_user
-  else  
+  else
     new_user = create_user(username, password)
     create_user_yml(new_user)
 
@@ -175,7 +176,7 @@ post '/users/login' do
 
   if @user != false && valid_credentials?(@user, username,
                                           @user.password, password)
-  
+
     session[:success] = 'Welcome!'
     session[:curr_usr] = username
     redirect '/'
@@ -195,32 +196,30 @@ end
 
 # Make sure given name is valid
 def valid_name?(name)
-  name.empty? ? session[:name_error] = "Contact must have a name." : true
+  name.empty? ? session[:name_error] = 'Contact must have a name.' : true
 end
 
 # Check incoming phone number against current contacts
 def phone_unique?(id, phone)
   contacts = @storage.contacts
   contacts.reject! { |contact| contact[:id] == id.to_s }
-  !(contacts.map { |contact| contact[:phone] }.include?(phone))
+  !contacts.map { |contact| contact[:phone] }.include?(phone)
 end
 
 # Check incoming phone number format
 def phone_formatted?(phone)
   phone =~ /^\([0-9]{3}\) [0-9]{3}-[0-9]{4}$/ ||
-  phone =~ /^[0-9]{10}$/ ||
-  phone =~ /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/
+    phone =~ /^[0-9]{10}$/ ||
+    phone =~ /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/
 end
 
 # Make sure given phone number is valid
 def valid_phone?(id, phone)
-
-  case
-  when phone.empty?
+  if phone.empty?
     true
-  when !phone_unique?(id, phone)
+  elsif !phone_unique?(id, phone)
     session[:phone_error] = 'Another contact already has that phone number.'
-  when !phone_formatted?(phone)
+  elsif !phone_formatted?(phone)
     session[:phone_error] = 'Please use the correct format: (###) ###-####.'
   else
     true
@@ -229,18 +228,20 @@ end
 
 # Checks that email is valid
 def valid_email?(email)
-  case
-  when email.empty?        then true
-  when email.include?('@') then true
-  else session[:email_error] = 'Email must contain an "@".'
+  if email.empty?
+    true
+  elsif email.include?('@')
+    true
+  else
+    session[:email_error] = 'Email must contain an "@".'
   end
 end
 
 # Return `true` if contact info is valid, `false` otherwise
 def valid_info?(info)
-  [ valid_name?(info[:name]),
-    valid_phone?(info[:id], info[:phone]),
-    valid_email?(info[:email]) ].all? true
+  [valid_name?(info[:name]),
+   valid_phone?(info[:id], info[:phone]),
+   valid_email?(info[:email])].all? true
 end
 
 # Create a new contact

@@ -1,18 +1,20 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 ruby '2.7.6'
 
+gem 'bcrypt'
+gem 'erubis'
+gem 'pg'
 gem 'sinatra'
 gem 'sinatra-contrib'
-gem 'erubis'
-gem 'thin'
-gem 'pg'
 gem 'sysrandom'
-gem 'bcrypt'
+gem 'thin'
 
-gem 'rack-test'
 gem 'minitest'
 gem 'minitest-reporters'
+gem 'rack-test'
 
 group :development do
   gem 'pry'

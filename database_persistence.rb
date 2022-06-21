@@ -31,27 +31,28 @@ class DatabasePersistence
     format_contact_info(contact_result.first)
   end
 
-  def update_contact(c)
+  def update_contact(contact)
     sql = <<~SQL
       UPDATE contacts
         SET "name" = $1, phone = $2, email = $3, category = $4
         WHERE id = $5
     SQL
-    phone = format_phone_for_database(c[:phone])
-    set_nil_values!(c)
+    phone = format_phone_for_database(contact[:phone])
+    convert_emty_string_to_nil!(contact)
 
-    query(sql, c[:name], phone, c[:email], c[:category], c[:id])
+    query(sql, contact[:name], phone, contact[:email],
+          contact[:category], contact[:id])
   end
 
-  def add_contact(c)
+  def add_contact(contact)
     sql = <<~SQL
       INSERT INTO contacts ("name", phone, email, category)
         VALUES ($1, $2, $3, $4)
     SQL
-    phone = format_phone_for_database(c[:phone])
-    set_nil_values!(c)
+    phone = format_phone_for_database(contact[:phone])
+    convert_emty_string_to_nil!(contact)
 
-    query(sql, c[:name], phone, c[:email], c[:category])
+    query(sql, contact[:name], phone, contact[:email], contact[:category])
   end
 
   def delete_contact(id)
@@ -61,23 +62,30 @@ class DatabasePersistence
 
   def contact?(id)
     sql = 'SELECT 1 WHERE EXISTS (SELECT "name" FROM contacts WHERE id = $1)'
-    result = query(sql, id).values.first == ['1']
+    query(sql, id).values.first == ['1']
+  end
+
+  def all_users
+    sql = 'SELECT username, "password" FROM users'
+    query(sql)
   end
 
   private
-  
+
   def query(statement, *params)
     @logger.info "#{statement}: #{params}"
     @db.exec_params statement, params
   end
-  
+
   def format_phone_for_database(user_format)
     return if user_format.nil? || user_format.empty?
+
     user_format.delete '^[0-9]'
   end
 
   def format_phone_for_user(just_digits)
     return if just_digits.nil? || just_digits.empty?
+
     n = just_digits.chars
     "(#{n[0..2].join}) #{n[3..5].join}-#{n[6..9].join}"
   end
@@ -90,7 +98,7 @@ class DatabasePersistence
       category: contact_info['category'] }
   end
 
-  def set_nil_values!(contact_info)
+  def convert_emty_string_to_nil!(contact_info)
     contact_info.each_key do |key|
       contact_info[key] = nil if contact_info[key].empty?
     end
