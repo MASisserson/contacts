@@ -96,14 +96,6 @@ def create_user(username, password)
   User.new(username, BCrypt::Password.create(password).split('').join(''))
 end
 
-# Creates a user.yml file based on the given User instance.
-def create_user_yml(obj)
-  path = find_path_to('users')
-  file_name = "#{obj.username}.yml"
-  file_path = File.join path, file_name
-  File.open(file_path, 'w') { |file| file.write(obj.to_yaml) }
-end
-
 # Make sure given name is valid
 def valid_name?(name)
   name.empty? ? session[:name_error] = 'Contact must have a name.' : true
