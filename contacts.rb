@@ -48,45 +48,13 @@ helpers do
   end
 end
 
-# Displays contacts from database
-get '/contacts' do
-  @sort_field = params[:sort_by] || 'name'
-  @contacts = @storage.contacts
-
-  erb :contacts
-end
-
-get '/contacts/new' do
-  erb :new
-end
-
-get '/contacts/:contact_id/edit' do |contact_id|
-  valid_contact_id?(contact_id)
-
-  @contact_id = contact_id
-  @contact = @storage.get_contact_info @contact_id
-
-  erb :edit_contact
-end
-
 def find_path_to(dir)
   File.expand_path(dir, __dir__)
 end
 
-# Returns an array of user YAML files
+# Returns an array of User objects, containing all users
 def all_users
-  # @storage.all_users
-
-  users_dir = find_path_to('users')
-
-  files = Dir.children(users_dir).select do |filename|
-    filename.end_with? '.yml'
-  end
-
-  files.map do |filename|
-    path = File.join(users_dir, filename)
-    YAML.load_file(path)
-  end
+  @storage.all_users
 end
 
 # Look for a user yml file based on a given username
@@ -101,15 +69,10 @@ end
 # Validate login credentials
 def valid_credentials?(saved_usr, username, saved_pwd, password)
   if saved_usr.username == username
-    password == BCrypt::Password.new(saved_pwd)
+    BCrypt::Password.new(saved_pwd) == password
   else
     false
   end
-end
-
-# Page for user account credential creation.
-get '/users/new' do
-  erb :new_user
 end
 
 # Checks that the submitted username is valid.
@@ -124,7 +87,7 @@ def valid_username?(username)
 end
 
 # Checks that the submitted password is valid
-def valid_password?(_password, password_confirm)
+def valid_password?(password, password_confirm)
   password == password_confirm
 end
 
@@ -139,59 +102,6 @@ def create_user_yml(obj)
   file_name = "#{obj.username}.yml"
   file_path = File.join path, file_name
   File.open(file_path, 'w') { |file| file.write(obj.to_yaml) }
-end
-
-# Creates a user account, and automatically logs it in.
-post '/users/new' do
-  username = params[:username]
-  password = params[:password]
-  pwd_confirm = params[:confirm]
-
-  if !valid_username?(username)
-    session[:failure] = 'Username already in use.'
-    erb :new_user
-  elsif !valid_password?(password, pwd_confirm)
-    session[:failure] = 'Passwords do not match.'
-    erb :new_user
-  else
-    new_user = create_user(username, password)
-    create_user_yml(new_user)
-
-    session[:curr_usr] = username
-    redirect '/contacts'
-  end
-end
-
-# Load login page
-get '/users/login' do
-  erb :login
-end
-
-# Submits and validates user sign in credentials
-post '/users/login' do
-  username = params[:username]
-  password = params[:password]
-  @user = find_user(username)
-  @users = all_users
-
-  if @user != false && valid_credentials?(@user, username,
-                                          @user.password, password)
-
-    session[:success] = 'Welcome!'
-    session[:curr_usr] = username
-    redirect '/'
-  else
-    status 422
-    session[:failure] = 'Invalid credentials'
-    erb :login, layout: :layout
-  end
-end
-
-# Signs out a user
-post '/users/signout' do
-  session[:curr_usr] = nil
-  session[:success] = 'You have been signed out.'
-  redirect to '/contacts'
 end
 
 # Make sure given name is valid
@@ -242,6 +152,84 @@ def valid_info?(info)
   [valid_name?(info[:name]),
    valid_phone?(info[:id], info[:phone]),
    valid_email?(info[:email])].all? true
+end
+
+# Displays contacts from database
+get '/contacts' do
+  @sort_field = params[:sort_by] || 'name'
+  @contacts = @storage.contacts
+
+  erb :contacts
+end
+
+get '/contacts/new' do
+  erb :new
+end
+
+get '/contacts/:contact_id/edit' do |contact_id|
+  valid_contact_id?(contact_id)
+
+  @contact_id = contact_id
+  @contact = @storage.get_contact_info @contact_id
+
+  erb :edit_contact
+end
+
+# Page for user account credential creation.
+get '/users/new' do
+  erb :new_user
+end
+
+# Creates a user account, and automatically logs it in.
+post '/users/new' do
+  username = params[:username]
+  password = params[:password]
+  pwd_confirm = params[:confirm]
+
+  if !valid_username?(username)
+    session[:failure] = 'Username already in use.'
+    erb :new_user
+  elsif !valid_password?(password, pwd_confirm)
+    session[:failure] = 'Passwords do not match.'
+    erb :new_user
+  else
+    new_user = create_user(username, password)
+    @storage.add_user(new_user)
+
+    session[:curr_usr] = username
+    redirect to '/contacts'
+  end
+end
+
+# Load login page
+get '/users/login' do
+  erb :login
+end
+
+# Submits and validates user sign in credentials
+post '/users/login' do
+  username = params[:username]
+  password = params[:password]
+  @user = find_user(username)
+
+  if @user != false && valid_credentials?(@user, username,
+                                          @user.password, password)
+
+    session[:success] = 'Welcome!'
+    session[:curr_usr] = username
+    redirect to '/contacts'
+  else
+    status 422
+    session[:failure] = 'Invalid credentials'
+    erb :login, layout: :layout
+  end
+end
+
+# Signs out a user
+post '/users/signout' do
+  session[:curr_usr] = nil
+  session[:success] = 'You have been signed out.'
+  redirect to '/contacts'
 end
 
 # Create a new contact

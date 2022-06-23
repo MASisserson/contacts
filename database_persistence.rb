@@ -2,6 +2,8 @@
 
 require 'pg'
 
+require_relative 'user_obj'
+
 # Handles communication with the database
 class DatabasePersistence
   def initialize(logger)
@@ -65,9 +67,18 @@ class DatabasePersistence
     query(sql, id).values.first == ['1']
   end
 
+  # Returns an array of User objects
   def all_users
     sql = 'SELECT username, "password" FROM users'
-    query(sql)
+    query(sql).map do |user_info|
+      User.new(user_info['username'], user_info['password'])
+    end
+  end
+
+  # Inserts a new user into the user table
+  def add_user(new_user)
+    sql = 'INSERT INTO users (username, "password") VALUES ($1, $2)'
+    query(sql, new_user.username, new_user.password)
   end
 
   private
