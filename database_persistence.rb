@@ -18,9 +18,14 @@ class DatabasePersistence
   end
 
   # Query database for contact list, return as an array of hashes
-  def contacts
-    sql = 'SELECT * FROM contacts'
-    result = query(sql)
+  def contacts(username)
+    sql = <<~SQL
+      SELECT contacts.* FROM contacts
+        JOIN users ON users.id = contacts.user_id
+        WHERE users.username = $1
+    SQL
+
+    result = query(sql, username)
 
     result.map { |tuple| format_contact_info(tuple) }
   end

@@ -148,8 +148,8 @@ end
 
 # Displays contacts from database
 get '/contacts' do
-  @sort_field = params[:sort_by] || 'name'
-  @contacts = @storage.contacts
+  @sort_field = params[:sort_field] || 'name'
+  @contacts = @storage.contacts(session[:curr_usr])
 
   erb :contacts
 end

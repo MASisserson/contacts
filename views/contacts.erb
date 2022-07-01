@@ -1,67 +1,69 @@
-<table>
-  <caption>Contact List</caption>
-  <thead>
-    <tr>
-      <th scope="col">Name</th>
-      <th scope="col">Phone Number</th>
-      <th scope="col">Email Address</th>
-      <th scope="col">Category</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <% sort_by(@contacts, @sort_field).each do |contact| %>
+<% unless @contacts.empty? %>
+  <table>
+    <caption>Contact List</caption>
+    <thead>
       <tr>
-        <td><%= contact[:name] %></td>
-        <td><%= contact[:phone] %></td>
-        <td><%= contact[:email] %></td>
-        <td><%= contact[:category] %></td>
+        <th scope="col">Name</th>
+        <th scope="col">Phone Number</th>
+        <th scope="col">Email Address</th>
+        <th scope="col">Category</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% sort_by(@contacts, @sort_field).each do |contact| %>
+        <tr>
+          <td><%= contact[:name] %></td>
+          <td><%= contact[:phone] %></td>
+          <td><%= contact[:email] %></td>
+          <td><%= contact[:category] %></td>
+          <td>
+            <form method="get" action="/contacts/<%= contact[:id] %>/edit">
+              <button type="submit">Update</button>
+            </form>
+          </td>
+          <td>
+            <form class="delete" method="post"
+                  action="/contacts/<%= contact[:id] %>/delete">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% end %>
+    <tbody>
+    <tfoot>
+      <tr>
         <td>
-          <form method="get" action="/contacts/<%= contact[:id] %>/edit">
-            <button type="submit">Update</button>
+          <form method="get" action="/contacts">
+            <button type="submit" name="sort_field" value="name">Sort</button>
           </form>
         </td>
         <td>
-          <form class="delete" method="post"
-                action="/contacts/<%= contact[:id] %>/delete">
-            <button type="submit">Delete</button>
+          <form method="get" action="/contacts">
+            <button type="submit" name="sort_field" value="phone">Sort</button>
+          </form>
+        </td>
+        <td>
+          <form method="get" action="/contacts">
+            <button type="submit" name="sort_field" value="email">Sort</button>
+          </form>
+        </td>
+        <td>
+          <form method="get" action="/contacts">
+            <button type="submit" name="sort_field" value="category">Sort</button>
           </form>
         </td>
       </tr>
-    <% end %>
-  <tbody>
+    </tfoot>
+  </table>
+<% end %>
 
-  <tfoot>
-    <tr>
-      <td>
-        <form method="get" action="/contacts">
-          <button type="submit" name="sort_by" value="name">Sort</button>
-        </form>
-      </td>
-      <td>
-        <form method="get" action="/contacts">
-          <button type="submit" name="sort_by" value="phone">Sort</button>
-        </form>
-      </td>
-      <td>
-        <form method="get" action="/contacts">
-          <button type="submit" name="sort_by" value="email">Sort</button>
-        </form>
-      </td>
-      <td>
-        <form method="get" action="/contacts">
-          <button type="submit" name="sort_by" value="category">Sort</button>
-        </form>
-      </td>
-    </tr>
-  </tfoot>
-</table>
-
-<form method="get" action="/contacts/new">
-  <button type="submit">Add Contact</button>
-</form>
 
 <% if session[:curr_usr] %>
+  <form method="get" action="/contacts/new">
+    <button type="submit">Add Contact</button>
+  </form>
+
   <p>Logged in as <%= session[:curr_usr] %></p>
 
   <form method="post" action="/users/signout">
