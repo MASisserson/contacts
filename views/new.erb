@@ -10,7 +10,8 @@
       <label for="name">Name:</label>
     <% end %>
 
-    <input type="text" id="name" name="name" required />
+    <input type="text" id="name" name="name"
+           value="<%= params[:name] || '' %>" required />
   </fieldset>
 
   <fieldset>

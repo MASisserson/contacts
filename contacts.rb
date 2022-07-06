@@ -23,10 +23,11 @@ end
 
 # Check's that there is a contact with the given id.
 def valid_contact_id?(contact_id)
-  return if @storage.contact? contact_id
+  return if @storage.contact? contact_id, session[:curr_usr]
 
-  session[:failure] = 'Sorry, we do not have such a contact on file.'
+  session[:failure] = 'Sorry, you do not have such a contact on file.'
   redirect to '/contacts'
+
 end
 
 before do
@@ -88,7 +89,7 @@ end
 
 # Checks that the submitted password is valid
 def valid_password?(password, password_confirm)
-  password == password_confirm
+  password == password_confirm && password.length <= 20
 end
 
 # Creates a new user object with the given username and password
@@ -99,11 +100,19 @@ end
 # Make sure given name is valid
 def valid_name?(name)
   name.empty? ? session[:name_error] = 'Contact must have a name.' : true
+
+  case
+  when name.empty?
+    session[:name_error] = 'Contact must have a name.'
+  when name.length > 30
+    session[:name_error] = 'Contact cannot have more than 30 characters in their saved name.'
+  else true
+  end
 end
 
 # Check incoming phone number against current contacts
 def phone_unique?(id, phone)
-  contacts = @storage.contacts
+  contacts = @storage.contacts(session[:curr_usr])
   contacts.reject! { |contact| contact[:id] == id.to_s }
   !contacts.map { |contact| contact[:phone] }.include?(phone)
 end
@@ -130,12 +139,10 @@ end
 
 # Checks that email is valid
 def valid_email?(email)
-  if email.empty?
-    true
-  elsif email.include?('@')
+  if email.empty? || (email.include?('@') && email.length <= 35)
     true
   else
-    session[:email_error] = 'Email must contain an "@".'
+    session[:email_error] = 'Email address must contain an "@" and be contain 35 or fewer characters.'
   end
 end
 
@@ -146,6 +153,10 @@ def valid_info?(info)
    valid_email?(info[:email])].all? true
 end
 
+not_found do
+  redirect to '/contacts'
+end
+
 # Displays contacts from database
 get '/contacts' do
   @sort_field = params[:sort_field] || 'name'
@@ -154,10 +165,12 @@ get '/contacts' do
   erb :contacts
 end
 
+# Display new contact form
 get '/contacts/new' do
   erb :new
 end
 
+# Display contact editing form
 get '/contacts/:contact_id/edit' do |contact_id|
   valid_contact_id?(contact_id)
 
@@ -182,7 +195,7 @@ post '/users/new' do
     session[:failure] = 'Username already in use.'
     erb :new_user
   elsif !valid_password?(password, pwd_confirm)
-    session[:failure] = 'Passwords do not match.'
+    session[:failure] = 'Passwords must be 20 characters or less and must match each other.'
     erb :new_user
   else
     new_user = create_user(username, password)
@@ -232,13 +245,13 @@ post '/contacts/new' do
                    category: params[:category].strip }
 
   if valid_info?(contact_info)
-    @storage.add_contact(contact_info)
+    @storage.add_contact(contact_info, session[:curr_usr])
 
     session[:success] = "Added #{params[:name]} to contact list."
     redirect to '/contacts'
   else
     session[:failure] = 'The new contact could not be accepted.'
-    redirect to '/contacts/new'
+    erb :new
   end
 end
 
