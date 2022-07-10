@@ -3,7 +3,6 @@
 require 'sinatra'
 require 'tilt/erubis'
 require 'bcrypt'
-require 'yaml'
 
 require_relative 'database_persistence'
 require_relative 'user_obj'
@@ -27,7 +26,6 @@ def valid_contact_id?(contact_id)
 
   session[:failure] = 'Sorry, you do not have such a contact on file.'
   redirect to '/contacts'
-
 end
 
 before do
@@ -101,12 +99,12 @@ end
 def valid_name?(name)
   name.empty? ? session[:name_error] = 'Contact must have a name.' : true
 
-  case
-  when name.empty?
+  if name.empty?
     session[:name_error] = 'Contact must have a name.'
-  when name.length > 30
+  elsif name.length > 30
     session[:name_error] = 'Contact cannot have more than 30 characters in their saved name.'
-  else true
+  else
+    true
   end
 end
 

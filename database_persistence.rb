@@ -142,8 +142,7 @@ class DatabasePersistence
           SELECT contacts.id FROM contacts
             JOIN users ON users.id = contacts.user_id
             WHERE users.username = $2 AND contacts.name = $3
-            ORDER BY contacts.id DESC
-            LIMIT 1
+            ORDER BY contacts.id DESC LIMIT 1
         ))
     SQL
 
